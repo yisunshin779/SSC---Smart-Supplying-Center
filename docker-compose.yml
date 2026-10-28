@@ -1,0 +1,29 @@
+services:
+  # 1. Cơ sở dữ liệu SQL Server (Kho ảo)
+  ssc-db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    ports:
+      - "1433:1433"
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=SscProject@2026 # Mật khẩu phải mạnh: có chữ hoa, số và ký tự đặc biệt
+    volumes:
+      - ssc-sqlserver-data:/var/opt/mssql
+
+  # 2. Bộ nhớ đệm (Redis)
+  ssc-cache:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+
+  # 3. Vỏ bọc cho Backend Service Java
+  ssc-pricing-service:
+    image: eclipse-temurin:17-jdk-alpine
+    command: tail -f /dev/null 
+    depends_on:
+      - ssc-db
+      - ssc-cache
+
+volumes:
+  ssc-sqlserver-data:
+    driver: local
