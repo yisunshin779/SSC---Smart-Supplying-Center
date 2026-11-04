@@ -1,11 +1,13 @@
 package com.ssc.backend.service;
 
-import com.ssc.backend.entity.SupplierSKU;
-import com.ssc.backend.repository.SupplierSKURepository;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import com.ssc.backend.entity.SupplierSKU;
+import com.ssc.backend.repository.SupplierSKURepository;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -13,7 +15,7 @@ public class SupplierSelectionService {
 
     private final SupplierSKURepository supplierSKURepository;
 
-    public SupplierSKU findOptimalSupplier(Integer templateId, Integer requiredQuantity) {
+    public SupplierSKU findOptimalSupplier(Integer templateId, Integer requiredQuantity, Integer maxLeadTime) {
         // 1. Lấy danh sách xưởng gia công mẫu mã này, đã được SQL Server sắp xếp giá từ thấp đến cao
         List<SupplierSKU> suppliers = supplierSKURepository.findByTemplateIdOrderByBaseCostAsc(templateId);
 
