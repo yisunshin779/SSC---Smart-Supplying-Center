@@ -1,13 +1,20 @@
 package com.ssc.backend.controller;
 
-import com.ssc.backend.entity.SupplierSKU;
-import com.ssc.backend.service.SupplierSelectionService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import java.util.Map;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.ssc.backend.entity.SupplierSKU;
+import com.ssc.backend.service.SupplierSelectionService;
+
+import lombok.RequiredArgsConstructor;
+
+@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/api/suppliers")
 @RequiredArgsConstructor

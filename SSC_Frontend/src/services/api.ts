@@ -7,6 +7,10 @@ const apiClient = axios.create({
     },
 });
 
+export const getAvailableProducts = () => {
+    return apiClient.get('/products'); // Điều chỉnh lại biến apiClient hoặc axios tùy theo cấu hình thực tế của dự án
+};
+
 export const getOptimalSupplier = (templateId: number, quantity: number, maxLeadTime: number) => {
     return apiClient.get('/suppliers/optimal', {
         params: { templateId, requiredQuantity: quantity, maxLeadTime }
