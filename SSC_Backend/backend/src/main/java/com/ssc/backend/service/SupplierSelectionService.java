@@ -2,31 +2,38 @@ package com.ssc.backend.service;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.ssc.backend.dto.SupplierResponseDTO;
 import com.ssc.backend.entity.SupplierSKU;
 import com.ssc.backend.repository.SupplierSKURepository;
 
-import lombok.RequiredArgsConstructor;
-
 @Service
-@RequiredArgsConstructor
 public class SupplierSelectionService {
 
-    private final SupplierSKURepository supplierSKURepository;
+    @Autowired
+    private SupplierSKURepository supplierSKURepository;
 
-    public SupplierSKU findOptimalSupplier(Integer templateId, Integer requiredQuantity, Integer maxLeadTime) {
-        // 1. Lấy danh sách xưởng gia công mẫu mã này, đã được SQL Server sắp xếp giá từ thấp đến cao
-        List<SupplierSKU> suppliers = supplierSKURepository.findByTemplateIdOrderByBaseCostAsc(templateId);
+    // Hàm 1: Trả về Entity gốc (Dùng cho nội bộ Backend như OrderService)
+    public SupplierSKU findOptimalSupplierEntity(Integer templateId, int quantity, int maxLeadTime) {
+        List<SupplierSKU> candidates = supplierSKURepository.findByTemplateIdOrderByBaseCostAsc(templateId);
 
-        // 2. Duyệt từ trên xuống, chốt xưởng RẺ NHẤT đáp ứng đủ số lượng tồn kho
-        for (SupplierSKU supplier : suppliers) {
-            if (supplier.getAvailableStock() >= requiredQuantity && supplier.getLeadTimeDays() <= maxLeadTime) {
-                return supplier;
-            }
+        return candidates.stream()
+                        .filter(sku -> sku.getAvailableStock() >= quantity && sku.getLeadTimeDays() <= maxLeadTime)
+                        .findFirst()
+                        .orElseThrow(() -> new RuntimeException("Không tìm thấy xưởng gia công phù hợp."));
         }
-        
-        // 3. Ném lỗi nghiệp vụ nếu toàn bộ hệ thống không có xưởng nào đủ năng lực
-        throw new RuntimeException("Hệ thống hiện không có xưởng nào đáp ứng đủ số lượng và thời gian giao");
+
+    // Hàm 2: Trả về DTO an toàn (Dùng cho Controller đẩy lên React)
+    public SupplierResponseDTO findOptimalSupplier(Integer templateId, int quantity, int maxLeadTime) {
+        SupplierSKU optimalSupplier = findOptimalSupplierEntity(templateId, quantity, maxLeadTime);
+
+        return new SupplierResponseDTO(
+            optimalSupplier.getSupplierName(),
+            optimalSupplier.getBaseCost(),
+            optimalSupplier.getLeadTimeDays(),
+            optimalSupplier.getAvailableStock()
+        );
     }
 }

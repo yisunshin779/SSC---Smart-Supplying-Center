@@ -1,13 +1,16 @@
 package com.ssc.backend.service;
 
+import java.math.BigDecimal;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.ssc.backend.entity.Order;
 import com.ssc.backend.entity.SupplierSKU;
 import com.ssc.backend.repository.OrderRepository;
 import com.ssc.backend.repository.SupplierSKURepository;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import java.math.BigDecimal;
 
 @Service
 @RequiredArgsConstructor
@@ -20,7 +23,7 @@ public class OrderService {
     @Transactional
     public Order placeOrder(Integer customerId, Integer templateId, Integer quantity, Integer maxLeadTime) {
         // 1. Chạy thuật toán tìm xưởng tối ưu
-        SupplierSKU optimalSupplier = supplierSelectionService.findOptimalSupplier(templateId, quantity, maxLeadTime);
+        SupplierSKU optimalSupplier = supplierSelectionService.findOptimalSupplierEntity(templateId, quantity, maxLeadTime);
 
         // 2. Trừ lùi tồn kho và chuyển sang trạng thái đang sản xuất
         optimalSupplier.setAvailableStock(optimalSupplier.getAvailableStock() - quantity);

@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ssc.backend.entity.SupplierSKU;
+import com.ssc.backend.dto.SupplierResponseDTO;
 import com.ssc.backend.service.SupplierSelectionService;
 
 import lombok.RequiredArgsConstructor;
@@ -30,7 +30,7 @@ public class SupplierController {
         
         try {
             // Chuyển giao yêu cầu xuống tầng Service để chạy thuật toán
-            SupplierSKU optimalSupplier = supplierSelectionService.findOptimalSupplier(templateId, requiredQuantity, maxLeadTime);
+            SupplierResponseDTO optimalSupplier = supplierSelectionService.findOptimalSupplier(templateId, requiredQuantity, maxLeadTime);
             
             // Trả về mã 200 OK kèm dữ liệu xưởng dạng JSON
             return ResponseEntity.ok(optimalSupplier);
