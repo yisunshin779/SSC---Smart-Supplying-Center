@@ -2,6 +2,7 @@ package com.ssc.backend.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -19,12 +20,10 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    // Constructor tường minh
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
 
-    // Bean mã hóa mật khẩu bằng BCrypt
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -33,12 +32,20 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .cors(Customizer.withDefaults()) // Giữ nguyên cấu hình CORS từ CorsConfig
-            .csrf(csrf -> csrf.disable())    // Tắt CSRF vì dùng JWT
+            .cors(Customizer.withDefaults()) // Tự động nạp Bean CorsConfigurationSource từ CorsConfig
+            .csrf(csrf -> csrf.disable())    // Tắt CSRF vì dùng JWT Stateless
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**").permitAll() // Mở cổng đăng nhập / đăng ký
-                .anyRequest().authenticated()                // Khóa toàn bộ các API còn lại
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Cho phép trình duyệt gửi preflight
+                .requestMatchers("/api/auth/**", "/error").permitAll()  // Mở cổng Auth và luồng báo lỗi chuẩn
+
+                // Mở comment dòng dưới nếu muốn Cổng Khách Hàng xem dữ liệu công khai không cần đăng nhập:
+                // .requestMatchers(HttpMethod.GET, "/api/products/**", "/api/suppliers/**").permitAll()
+
+                // Phân quyền theo nhóm API (Spring tự ghép tiền tố ROLE_ thành ROLE_ADMIN, ROLE_SUPPLIER)
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                .requestMatchers("/api/supplier/**").hasAnyRole("SUPPLIER", "ADMIN")
+                .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

@@ -1,18 +1,32 @@
 package com.ssc.backend.config;
 
+import java.util.List;
+
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
-public class CorsConfig implements WebMvcConfigurer {
+public class CorsConfig {
 
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/api/**") // Áp dụng quy tắc này cho toàn bộ API của hệ thống SSC
-                .allowedOrigins("http://localhost:5173") // Chỉ định đích danh cổng của React Vite
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // Các giao thức được phép qua trạm
-                .allowedHeaders("*") // Mở cửa cho mọi loại Header (rất cần thiết khi bạn gắn Token bảo mật sau này)
-                .allowCredentials(true); // Cho phép trình duyệt đính kèm cookie hoặc thông tin xác thực
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        // Cho phép cả localhost và 127.0.0.1 của React Vite
+        config.setAllowedOrigins(List.of(
+            "http://localhost:5173",
+            "http://127.0.0.1:5173"
+        ));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setExposedHeaders(List.of("Authorization"));
+        config.setAllowCredentials(true);
+        config.setMaxAge(3600L); // Cache preflight 1 giờ để giảm request OPTIONS thừa
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
     }
 }
